@@ -1,18 +1,11 @@
+trace_configs=("manual" "auto" "no")
+nodes=(1 2 4 8 16)
+grids=("64x64x64" "128x128x64" "128x128x64")
 
-# DESTINATION=./window-changes-scaling/man-trace/ TRACE_CONFIG="manual" sbatch -N 1 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/man-trace/ TRACE_CONFIG="manual" sbatch -N 2 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/man-trace/ TRACE_CONFIG="manual" sbatch -N 4 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/man-trace/ TRACE_CONFIG="manual" sbatch -N 8 ./ammonia_job.sh
-DESTINATION=./window-changes-scaling/man-trace/ TRACE_CONFIG="manual" sbatch -N 16 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/auto-trace/ TRACE_CONFIG="auto" sbatch -N 1 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/auto-trace/ TRACE_CONFIG="auto" sbatch -N 2 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/auto-trace/ TRACE_CONFIG="auto" sbatch -N 4 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/auto-trace/ TRACE_CONFIG="auto" sbatch -N 8 ./ammonia_job.sh
-DESTINATION=./window-changes-scaling/auto-trace/ TRACE_CONFIG="auto" sbatch -N 16 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/no-trace/ TRACE_CONFIG="no" sbatch -N 1 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/no-trace/ TRACE_CONFIG="no" sbatch -N 2 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/no-trace/ TRACE_CONFIG="no" sbatch -N 4 ./ammonia_job.sh
-# DESTINATION=./window-changes-scaling/no-trace/ TRACE_CONFIG="no" sbatch -N 8 ./ammonia_job.sh
-DESTINATION=./window-changes-scaling/no-trace/ TRACE_CONFIG="no" sbatch -N 16 ./ammonia_job.sh
-
-
+for g in ${grids[@]}; do
+    for c in ${trace_configs[@]}; do
+        for n in ${nodes[@]}; do
+            GRID="$g" DESTINATION="./sweeptest/$g/$c-trace/" TRACE_CONFIG="$c" sbatch -N $n ./ammonia_job.sh
+	done
+    done
+done

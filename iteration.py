@@ -38,7 +38,7 @@ def read_times(pth):
         weija = weija.iloc[20:]
         weija = weija.reset_index()
 
-        iters_to_skip = 3
+        iters_to_skip = 4
         weija = weija.iloc[iters_to_skip * 11:]
         weija.reset_index()
 
@@ -58,7 +58,11 @@ def read_times(pth):
 
     times.sort(key=lambda x: x[0])
     for t, l in times:
-        print(t, l, np.average(l))
+        # print(t, l, np.average(l))
+        # Remove the two largest times to account for filesystem issues...
+        l.remove(max(l))
+        l.remove(max(l))
+        print(t, np.average(l))
 
 
 read_times(sys.argv[1])

@@ -15,9 +15,8 @@ DEV=/pscratch/sd/r/rohany/legion_s3d/
 MECHANISM=hept
 KERNEL_PATH="$DEV/kernels/${MECHANISM}_kernels"
 export LD_LIBRARY_PATH=$DEV/build/$MECHANISM:$KERNEL_PATH:$DEV/legion/language/build/lib/:$LD_LIBRARY_PATH
-# GRID=96x96x96
 
-GRID=64x64x64
+GRID=${GRID:-64x64x64}
 
 # export FI_CXI_DEFAULT_CQ_SIZE=13107200
 # export FI_CXI_REQ_BUF_MIN_POSTED=10
@@ -53,14 +52,14 @@ nz=${ranks_z[$num_nodes]}
 OUTDIR=$DESTINATION/./pwave_x_"$num_nodes"_"$MECHANISM"
 mkdir -p $OUTDIR
 
-if [ $TRACE_CONFIG = "manual" ]; then
+if [ "$TRACE_CONFIG" = "manual" ]; then
   RHST_TRACE=1
   LEGION_AUTO_TRACE_ARGS=""
-  LEGION_TRACE_ARGS="-lg:window 8192 -lg:sched 4096"
-elif [ $TRACE_CONFIG = "auto" ] ; then
+  LEGION_TRACE_ARGS="-lg:window 8192 -lg:sched 4096 -lg:no_transitive_reduction"
+elif [ "$TRACE_CONFIG" = "auto" ] ; then
   RHST_TRACE=0
   LEGION_AUTO_TRACE_ARGS="-lg:enable_automatic_tracing -lg:auto_trace:batchsize 5000 -level auto_trace=2 -lg:auto_trace:identifier_algorithm multi-scale -lg:auto_trace:multi_scale_factor 500 -lg:auto_trace:repeats_algorithm quick_matching_of_substrings -lg:auto_trace:min_trace_length 25"
-  LEGION_TRACE_ARGS="-lg:window 8192 -lg:sched 4096"
+  LEGION_TRACE_ARGS="-lg:window 8192 -lg:sched 4096 -lg:no_transitive_reduction"
 else
   RHST_TRACE=0
   LEGION_AUTO_TRACE_ARGS=""
@@ -69,7 +68,7 @@ fi
 
 ./ammonia_s3d.py  \
     -x $DEV/fortran/$MECHANISM/s3d.x -l $DEV/build/$MECHANISM/librhst.so \
-    -e RHSF_MAPMODE=allgpu -e GASNET_FREEZE_ON_ERROR=0 -e RHSF_FUSE=200 -e RHST_TRACE=$RHST_TRACE -g $GRID -v 1x1x1 -t 70 \
+    -e RHSF_MAPMODE=allgpu -e GASNET_FREEZE_ON_ERROR=0 -e RHSF_FUSE=200 -e RHST_TRACE=$RHST_TRACE -g $GRID -v 1x1x1 -t 150 \
     -b $DEV/s3d/ -p "$nx"x"$ny"x"$nz" -s slurm -e GASNET_BACKTRACE=1 \
     -e RHST_ARGS="-ll:gpu 1 -ll:cpu 1 -ll:util 3 -ll:bgwork 3 -ll:fsize 32768 -ll:csize 22528 -ll:rsize 1024 -ll:gsize 0 -ll:zsize 640 -ll:stacksize 16 -logfile run_%.log -cuda:lmemresize 1 -cuda:hostreg 0 -lg:prof $num_ranks -lg:prof_logfile prof_%.gz $LEGION_AUTO_TRACE_ARGS $LEGION_TRACE_ARGS" \
     --bomb-file=0d -k $OUTDIR -o $OUTDIR/ammonia.txt --title pressure_wave_test
